@@ -91,13 +91,50 @@ limit 0,8;
 
 -- Visits overtime
 
+-- Visit and Action per day for all visits
+
 select
 	date(visit_last_action_time) as date,
 	count(distinct idvisitor) as unique_visits,
 	count(idvisit) as visits,
 	count(user_id) as users,
-	count(visit_total_actions) as actions
+	sum(visit_total_actions) as actions,
+	max(visit_total_actions) as max_action,
+	sum(visit_total_time) as time_spent,
 from matomo.matomo_log_visit
+group by date(visit_last_action_time)
+order by idvisit desc
+limit 0,30;
+
+-- Visit and Action per day for new visits
+
+select
+	date(visit_last_action_time) as date,
+	count(visitor_returning) as new_visits,
+	sum(visit_total_actions) as new_actions,
+	count(user_id) as new_user,
+	max(visit_total_actions) as max_new_action,
+	round(avg(visit_total_actions),1) as avg_action_per_new_visit,
+	round(avg(visit_total_time),1) as avg_time_spent_by_new_visitor
+from matomo.matomo_log_visit
+where visitor_returning = 0
+group by date(visit_last_action_time)
+order by idvisit desc
+limit 0,30;
+
+-- Visit and Action per day for returning visits
+
+select
+	date(visit_last_action_time) as date,
+	count(visitor_returning) as returning_visitors,
+	sum(visit_total_actions) as actions_by_returning_visitors,
+	count(distinct idvisitor) as unique_returning_visitor,
+	count(user_id) as returning_users,
+	max(visit_total_actions) as max_action_returning_visitor,
+	round(avg(visit_total_actions),1) as avg_action_per_returning_visit,
+	round(avg(visit_total_time),1) as avg_time_spent_by_returning_visitor
+from matomo.matomo_log_visit
+where visitor_returning = 1
 group by date(visit_last_action_time)
 order by idvisit desc
 limit 0,30;
@@ -105,7 +142,6 @@ limit 0,30;
 select * from matomo.matomo_log_visit order by idvisit desc limit 0,30;
 select * from matomo.matomo_log_link_visit_action order by idvisit desc limit 0,10;
 select * from matomo.matomo_log_action order by idaction desc limit 2,1;
-
 
 		
 	
