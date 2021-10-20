@@ -139,6 +139,110 @@ group by date(visit_last_action_time)
 order by idvisit desc
 limit 0,30;
 
+-- Visitors from .....
+
+-- Direct entry
+
+select
+	date(visit_last_action_time) as date,
+	count(case 
+			when referer_type = 1 
+				then referer_type 
+			else null 
+			end) as direct_entry,
+	count(case 
+			when referer_type = 2 
+				then referer_type 
+			else null 
+			end) as search_engine,
+	count(distinct case 
+			when referer_type = 2 
+				then referer_type 
+			else null 
+			end) as distinct_search_engine,
+	count(case 
+			when referer_type = 3 
+				then referer_type 
+			else null 
+			end) as website_entry, 
+	count(distinct case 
+			when referer_type = 3 
+				then referer_type 
+			else null 
+			end) as distinct_website_entry,
+	count(case 
+			when referer_type = 6 
+				then referer_type 
+			else null 
+			end) as campaign_entry,
+	count(distinct case 
+			when referer_type = 6 
+				then referer_type 
+			else null 
+			end) as distinct_campaign_entry,
+	count(case 
+			when referer_type = 7 
+				then referer_type 
+			else null 
+			end) as social_network,
+	count(distinct case 
+			when referer_type = 7 
+				then referer_type 
+			else null 
+			end) as distinct_social_network
+from matomo.matomo_log_visit
+group by date(visit_last_action_time)
+order by idvisit desc
+limit 0,30;
+	
+-- Search Engines
+
+select 
+	date(visit_first_action_time) as date,
+	referer_name,
+	referer_url,
+	referer_keyword 
+from matomo.matomo_log_visit
+where referer_type = 2
+		and visit_first_action_time > now() - interval 24 hour
+order by idvisit desc;
+
+-- Website
+
+select 
+	date(visit_first_action_time) as date,
+	referer_name,
+	referer_url,
+	referer_keyword 
+from matomo.matomo_log_visit
+where referer_type = 3 
+	and visit_first_action_time > now() - interval 24 hour
+order by idvisit desc;
+
+-- Campaign
+
+select 
+	date(visit_first_action_time) as date,
+	referer_name,
+	referer_url,
+	referer_keyword 
+from matomo.matomo_log_visit
+where referer_type = 6 
+	and visit_first_action_time > now() - interval 24 hour
+order by idvisit desc;
+
+-- Social Network
+
+select 
+	date(visit_first_action_time) as date,
+	referer_name,
+	referer_url,
+	referer_keyword 
+from matomo.matomo_log_visit
+where referer_type = 7 
+	and visit_first_action_time > now() - interval 24 hour
+order by idvisit desc;
+
 select * from matomo.matomo_log_visit order by idvisit desc limit 0,30;
 select * from matomo.matomo_log_link_visit_action order by idvisit desc limit 0,10;
 select * from matomo.matomo_log_action order by idaction desc limit 2,1;
