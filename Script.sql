@@ -150,16 +150,33 @@ select
 				then referer_type 
 			else null 
 			end) as direct_entry,
+	concat(round(count(case 
+			when referer_type = 1
+				then referer_type
+			else null
+			end) *100 / (select count(referer_type))), '%')
+				as percent_direct_entry,
 	count(case 
 			when referer_type = 2 
 				then referer_type 
 			else null 
-			end) as search_engine,
+			end) as search_engine_entry,
 	count(distinct case 
 			when referer_type = 2 
-				then referer_type 
+				then idvisitor 
 			else null 
+			end) as distinct_search_engine_entry,
+	count(distinct case
+			when referer_type = 2
+				then referer_url
+			else null
 			end) as distinct_search_engine,
+	concat(round(count(case 
+			when referer_type = 2
+				then referer_type
+			else null
+			end) *100 / (select count(referer_type))), '%')
+				as percent_search_engine_entry,
 	count(case 
 			when referer_type = 3 
 				then referer_type 
@@ -167,9 +184,20 @@ select
 			end) as website_entry, 
 	count(distinct case 
 			when referer_type = 3 
-				then referer_type 
+				then idvisitor 
 			else null 
 			end) as distinct_website_entry,
+	count(distinct case 
+			when referer_type = 3 
+				then referer_url 
+			else null 
+			end) as distinct_website,
+	concat(round(count(case 
+			when referer_type = 3
+				then referer_type
+			else null
+			end) *100 / (select count(referer_type))), '%')
+				as percent_website_entry,
 	count(case 
 			when referer_type = 6 
 				then referer_type 
@@ -177,9 +205,20 @@ select
 			end) as campaign_entry,
 	count(distinct case 
 			when referer_type = 6 
-				then referer_type 
+				then idvisitor 
 			else null 
 			end) as distinct_campaign_entry,
+	count(distinct case 
+			when referer_type = 6 
+				then referer_url 
+			else null 
+			end) as distinct_campaign,
+	concat(round(count(case 
+			when referer_type = 6
+				then referer_type
+			else null
+			end) *100 / (select count(referer_type))), '%')
+				as percent_campaign_entry,
 	count(case 
 			when referer_type = 7 
 				then referer_type 
@@ -187,9 +226,21 @@ select
 			end) as social_network,
 	count(distinct case 
 			when referer_type = 7 
-				then referer_type 
+				then idvisitor 
 			else null 
-			end) as distinct_social_network
+			end) as distinct_social_network_entry,
+	count(distinct case 
+			when referer_type = 7 
+				then referer_url 
+			else null 
+			end) as distinct_social_network,
+	concat(round(count(case 
+			when referer_type = 7
+				then referer_type
+			else null
+			end) *100 / (select count(referer_type))), '%')
+				as percent_social_network_entry,
+	count(distinct referer_keyword) as distinct_keywords
 from matomo.matomo_log_visit
 group by date(visit_last_action_time)
 order by idvisit desc
@@ -198,51 +249,53 @@ limit 0,30;
 -- Search Engines
 
 select 
-	date(visit_first_action_time) as date,
+	date(visit_last_action_time) as date,
 	referer_name,
 	referer_url,
 	referer_keyword 
 from matomo.matomo_log_visit
 where referer_type = 2
-		and visit_first_action_time > now() - interval 24 hour
+		and visit_last_action_time > now() - interval 24 hour
 order by idvisit desc;
 
 -- Website
 
 select 
-	date(visit_first_action_time) as date,
+	date(visit_last_action_time) as date,
 	referer_name,
 	referer_url,
 	referer_keyword 
 from matomo.matomo_log_visit
 where referer_type = 3 
-	and visit_first_action_time > now() - interval 24 hour
+	and visit_last_action_time > now() - interval 24 hour
 order by idvisit desc;
 
 -- Campaign
 
 select 
-	date(visit_first_action_time) as date,
+	date(visit_last_action_time) as date,
 	referer_name,
 	referer_url,
 	referer_keyword 
 from matomo.matomo_log_visit
 where referer_type = 6 
-	and visit_first_action_time > now() - interval 24 hour
+	and visit_last_action_time > now() - interval 24 hour
 order by idvisit desc;
 
 -- Social Network
 
 select 
-	date(visit_first_action_time) as date,
+	date(visit_last_action_time) as date,
 	referer_name,
 	referer_url,
 	referer_keyword 
 from matomo.matomo_log_visit
 where referer_type = 7 
-	and visit_first_action_time > now() - interval 24 hour
+	and visit_last_action_time > now() - interval 24 hour
 order by idvisit desc;
 
+-- 
+ 
 select * from matomo.matomo_log_visit order by idvisit desc limit 0,30;
 select * from matomo.matomo_log_link_visit_action order by idvisit desc limit 0,10;
 select * from matomo.matomo_log_action order by idaction desc limit 2,1;
